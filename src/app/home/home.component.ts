@@ -4,6 +4,7 @@ import { ChecklistService } from '../shared/data-access/checklist.service';
 import { Checklist } from '../shared/interfaces/checklist';
 import { FormModalComponent } from '../shared/ui/form-modal.component';
 import { ModalComponent } from '../shared/ui/modal.component';
+import { ChecklistListComponent } from './ui/checklist-list.component';
 
 @Component({
   standalone: true,
@@ -28,8 +29,13 @@ import { ModalComponent } from '../shared/ui/modal.component';
         />
       </ng-template>
     </ql-modal>
+
+    <section>
+      <h2>Your checklists</h2>
+      <ql-checklist-list [checklists]="checklistService.checklists()" />
+    </section>
   `,
-  imports: [ModalComponent, FormModalComponent],
+  imports: [ModalComponent, FormModalComponent, ChecklistListComponent],
 })
 export default class HomeComponent {
   formbuilder = inject(FormBuilder);
