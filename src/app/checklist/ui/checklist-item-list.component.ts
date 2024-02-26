@@ -16,7 +16,7 @@ import { ChecklistItem } from '../../shared/interfaces/checklist-item';
         } @empty {
         <div>
           <h2>Add an item</h2>
-          <p>Click the add button to add your first item to this quicklist</p>
+          <p>Click the add button to add your first item to this quicklist!</p>
         </div>
         }
       </ul>
