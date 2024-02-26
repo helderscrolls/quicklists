@@ -1,5 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
+import { FormBuilder } from '@angular/forms';
+import { ChecklistService } from '../shared/data-access/checklist.service';
 import { Checklist } from '../shared/interfaces/checklist';
+import { FormModalComponent } from '../shared/ui/form-modal.component';
 import { ModalComponent } from '../shared/ui/modal.component';
 
 @Component({
@@ -12,11 +15,39 @@ import { ModalComponent } from '../shared/ui/modal.component';
     </header>
 
     <ql-modal [isOpen]="!!checklistBeingEdited()">
-      <ng-template> You can't see mee... yet </ng-template>
+      <ng-template>
+        <ql-form-modal
+          [title]="
+            checklistBeingEdited()?.title
+              ? checklistBeingEdited()!.title!
+              : 'Add Checklist'
+          "
+          [formGroup]="checklistForm"
+          (close)="checklistBeingEdited.set(null)"
+          (save)="checklistService.add$.next(checklistForm.getRawValue())"
+        />
+      </ng-template>
     </ql-modal>
   `,
-  imports: [ModalComponent],
+  imports: [ModalComponent, FormModalComponent],
 })
 export default class HomeComponent {
+  formbuilder = inject(FormBuilder);
+  checklistService = inject(ChecklistService);
+
   checklistBeingEdited = signal<Partial<Checklist> | null>(null);
+
+  checklistForm = this.formbuilder.nonNullable.group({
+    title: [''],
+  });
+
+  constructor() {
+    effect(() => {
+      const checklist = this.checklistBeingEdited();
+
+      if (!checklist) {
+        this.checklistForm.reset();
+      }
+    });
+  }
 }
