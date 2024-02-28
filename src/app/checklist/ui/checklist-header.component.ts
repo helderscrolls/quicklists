@@ -17,6 +17,13 @@ import { Checklist, RemoveChecklist } from '../../shared/interfaces/checklist';
       </div>
     </header>
   `,
+  styles: [
+    `
+      button {
+        margin-left: 1rem;
+      }
+    `,
+  ],
   imports: [RouterLink],
 })
 export class ChecklistHeaderComponent {

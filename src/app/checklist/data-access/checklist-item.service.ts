@@ -2,9 +2,11 @@ import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject } from 'rxjs';
 import { StorageService } from '../../shared/data-access/storage.service';
+import { RemoveChecklist } from '../../shared/interfaces/checklist';
 import {
   AddChecklistItem,
   ChecklistItem,
+  EditChecklistItem,
   RemoveChecklistItem,
 } from '../../shared/interfaces/checklist-item';
 
@@ -32,8 +34,11 @@ export class ChecklistItemService {
   // sources
   private checklistItemsLoaded$ = this.storageService.loadChecklistItems();
   add$ = new Subject<AddChecklistItem>();
+  remove$ = new Subject<RemoveChecklistItem>();
+  edit$ = new Subject<EditChecklistItem>();
   toggle$ = new Subject<RemoveChecklistItem>();
   reset$ = new Subject<RemoveChecklistItem>();
+  checklistRemove$ = new Subject<RemoveChecklist>();
 
   constructor() {
     // reducers
@@ -62,6 +67,22 @@ export class ChecklistItemService {
       }))
     );
 
+    this.remove$.pipe(takeUntilDestroyed()).subscribe((id) =>
+      this.state.update((state) => ({
+        ...state,
+        checklistItems: state.checklistItems.filter((item) => item.id !== id),
+      }))
+    );
+
+    this.edit$.pipe(takeUntilDestroyed()).subscribe((update) =>
+      this.state.update((state) => ({
+        ...state,
+        checklistItems: state.checklistItems.map((item) =>
+          item.id === update.id ? { ...item, title: update.data.title } : item
+        ),
+      }))
+    );
+
     this.toggle$.pipe(takeUntilDestroyed()).subscribe((checklistItemId) =>
       this.state.update((state) => ({
         ...state,
@@ -78,6 +99,15 @@ export class ChecklistItemService {
         ...state,
         checklistItems: state.checklistItems.map((item) =>
           item.checklistId === checkListId ? { ...item, checked: false } : item
+        ),
+      }))
+    );
+
+    this.checklistRemove$.pipe(takeUntilDestroyed()).subscribe((checklistId) =>
+      this.state.update((state) => ({
+        ...state,
+        checklistItems: state.checklistItems.filter(
+          (item) => item.checklistId !== checklistId
         ),
       }))
     );

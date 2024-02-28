@@ -1,7 +1,12 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject } from 'rxjs';
-import { AddChecklist, Checklist } from '../interfaces/checklist';
+import { ChecklistItemService } from '../../checklist/data-access/checklist-item.service';
+import {
+  AddChecklist,
+  Checklist,
+  EditChecklist,
+} from '../interfaces/checklist';
 import { StorageService } from './storage.service';
 
 export interface ChecklistsState {
@@ -15,6 +20,7 @@ export interface ChecklistsState {
 })
 export class ChecklistService {
   private storageService = inject(StorageService);
+  private checklistItemService = inject(ChecklistItemService);
 
   // state
   private state = signal<ChecklistsState>({
@@ -30,6 +36,8 @@ export class ChecklistService {
   // sources
   private checklistsLoaded$ = this.storageService.loadChecklists();
   add$ = new Subject<AddChecklist>();
+  remove$ = this.checklistItemService.checklistRemove$;
+  edit$ = new Subject<EditChecklist>();
 
   constructor() {
     // reducers
@@ -47,6 +55,24 @@ export class ChecklistService {
       this.state.update((state) => ({
         ...state,
         checklists: [...state.checklists, this.addIdToChecklist(checklist)],
+      }))
+    );
+
+    this.remove$.pipe(takeUntilDestroyed()).subscribe((id) =>
+      this.state.update((state) => ({
+        ...state,
+        checklists: state.checklists.filter((checklist) => checklist.id !== id),
+      }))
+    );
+
+    this.edit$.pipe(takeUntilDestroyed()).subscribe((update) =>
+      this.state.update((state) => ({
+        ...state,
+        checklists: state.checklists.map((checklist) =>
+          checklist.id === update.id
+            ? { ...checklist, title: update.data.title }
+            : checklist
+        ),
       }))
     );
 

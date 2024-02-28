@@ -25,14 +25,25 @@ import { ChecklistListComponent } from './ui/checklist-list.component';
           "
           [formGroup]="checklistForm"
           (close)="checklistBeingEdited.set(null)"
-          (save)="checklistService.add$.next(checklistForm.getRawValue())"
+          (save)="
+            checklistBeingEdited()?.id
+              ? checklistService.edit$.next({
+                  id: checklistBeingEdited()!.id!,
+                  data: checklistForm.getRawValue(),
+                })
+              : checklistService.add$.next(checklistForm.getRawValue())
+          "
         />
       </ng-template>
     </ql-modal>
 
     <section>
       <h2>Your checklists</h2>
-      <ql-checklist-list [checklists]="checklistService.checklists()" />
+      <ql-checklist-list
+        [checklists]="checklistService.checklists()"
+        (delete)="checklistService.remove$.next($event)"
+        (edit)="checklistBeingEdited.set($event)"
+      />
     </section>
   `,
   imports: [ModalComponent, FormModalComponent, ChecklistListComponent],
@@ -53,6 +64,10 @@ export default class HomeComponent {
 
       if (!checklist) {
         this.checklistForm.reset();
+      } else {
+        this.checklistForm.patchValue({
+          title: checklist.title,
+        });
       }
     });
   }
