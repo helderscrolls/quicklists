@@ -18,10 +18,14 @@ import { ChecklistItemListComponent } from './ui/checklist-item-list.component';
     <ql-checklist-header
       [checklist]="checklist"
       (addItem)="checklistItemBeingEdited.set({})"
+      (resetChecklist)="checklistItemService.reset$.next($event)"
     />
     }
 
-    <ql-checklist-item-list [checklistItems]="items()" />
+    <ql-checklist-item-list
+      [checklistItems]="items()"
+      (toggle)="checklistItemService.toggle$.next($event)"
+    />
 
     <ql-modal [isOpen]="!!checklistItemBeingEdited()">
       <ng-template>

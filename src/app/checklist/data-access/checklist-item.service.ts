@@ -4,6 +4,7 @@ import { Subject } from 'rxjs';
 import {
   AddChecklistItem,
   ChecklistItem,
+  RemoveChecklistItem,
 } from '../../shared/interfaces/checklist-item';
 
 export interface ChecklistItemsState {
@@ -24,6 +25,8 @@ export class ChecklistItemService {
 
   // sources
   add$ = new Subject<AddChecklistItem>();
+  toggle$ = new Subject<RemoveChecklistItem>();
+  reset$ = new Subject<RemoveChecklistItem>();
 
   constructor() {
     this.add$.pipe(takeUntilDestroyed()).subscribe((checklistItem) =>
@@ -38,6 +41,26 @@ export class ChecklistItemService {
             checked: false,
           },
         ],
+      }))
+    );
+
+    this.toggle$.pipe(takeUntilDestroyed()).subscribe((checklistItemId) =>
+      this.state.update((state) => ({
+        ...state,
+        checklistItems: state.checklistItems.map((item) =>
+          item.id === checklistItemId
+            ? { ...item, checked: !item.checked }
+            : item
+        ),
+      }))
+    );
+
+    this.reset$.pipe(takeUntilDestroyed()).subscribe((checkListId) =>
+      this.state.update((state) => ({
+        ...state,
+        checklistItems: state.checklistItems.map((item) =>
+          item.checklistId === checkListId ? { ...item, checked: false } : item
+        ),
       }))
     );
   }
