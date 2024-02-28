@@ -1,34 +1,61 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject } from 'rxjs';
 import { AddChecklist, Checklist } from '../interfaces/checklist';
+import { StorageService } from './storage.service';
 
 export interface ChecklistsState {
   checklists: Checklist[];
+  loaded: boolean;
+  error: string | null;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class ChecklistService {
+  private storageService = inject(StorageService);
+
   // state
   private state = signal<ChecklistsState>({
     checklists: [],
+    loaded: false,
+    error: null,
   });
 
   // selectors
+  loaded = computed(() => this.state().loaded);
   checklists = computed(() => this.state().checklists);
 
   // sources
+  private checklistsLoaded$ = this.storageService.loadChecklists();
   add$ = new Subject<AddChecklist>();
 
   constructor() {
+    // reducers
+    this.checklistsLoaded$.pipe(takeUntilDestroyed()).subscribe({
+      next: (checklists) =>
+        this.state.update((state) => ({
+          ...state,
+          checklists,
+          loaded: true,
+        })),
+      error: (err) => this.state.update((state) => ({ ...state, error: err })),
+    });
+
     this.add$.pipe(takeUntilDestroyed()).subscribe((checklist) =>
       this.state.update((state) => ({
         ...state,
         checklists: [...state.checklists, this.addIdToChecklist(checklist)],
       }))
     );
+
+    //effects
+    effect(() => {
+      if (this.loaded()) {
+        this.storageService.saveChecklists(this.checklists());
+      }
+    });
   }
 
   private addIdToChecklist(checklist: AddChecklist) {
