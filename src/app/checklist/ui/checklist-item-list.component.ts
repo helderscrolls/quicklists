@@ -9,6 +9,8 @@ import {
   selector: 'ql-checklist-item-list',
   template: `
     <section>
+      <p>Completed checklist items: {{ checkedItems }}</p>
+
       <ul>
         @for (item of checklistItems; track item.id) {
         <li>
@@ -57,6 +59,7 @@ import {
 })
 export class ChecklistItemListComponent {
   @Input({ required: true }) checklistItems!: ChecklistItem[];
+  @Input({ required: true }) checkedItems!: number;
   @Output() toggle = new EventEmitter<RemoveChecklistItem>();
   @Output() delete = new EventEmitter<RemoveChecklistItem>();
   @Output() edit = new EventEmitter<ChecklistItem>();

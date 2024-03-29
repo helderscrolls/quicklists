@@ -24,6 +24,7 @@ import { ChecklistItemListComponent } from './ui/checklist-item-list.component';
 
     <ql-checklist-item-list
       [checklistItems]="items()"
+      [checkedItems]="checkedItems()"
       (toggle)="checklistItemService.toggle$.next($event)"
       (edit)="checklistItemBeingEdited.set($event)"
       (delete)="checklistItemService.remove$.next($event)"
@@ -77,6 +78,12 @@ export default class ChecklistComponent {
     this.checklistItemService
       .checklistItems()
       .filter((item) => item.checklistId === this.params()?.get('id'))
+  );
+
+  checkedItems = computed(
+    () =>
+      this.checklistItemService.checklistItems().filter((item) => item.checked)
+        .length
   );
 
   checklistItemForm = this.formBuilder.nonNullable.group({
