@@ -82,12 +82,29 @@ export class ChecklistService {
         this.storageService.saveChecklists(this.checklists());
       }
     });
+
+    effect(
+      () => {
+        const checklistItems = this.checklistItemService.checklistItems();
+        this.state.update((state) => ({
+          ...state,
+          checklists: state.checklists.map((checklist) => ({
+            ...checklist,
+            itemsCount: checklistItems.filter(
+              (item) => item.checklistId === checklist.id
+            ).length,
+          })),
+        }));
+      },
+      { allowSignalWrites: true }
+    );
   }
 
   private addIdToChecklist(checklist: AddChecklist) {
     return {
       ...checklist,
       id: this.generateSlug(checklist.title),
+      itemsCount: 0,
     };
   }
 
