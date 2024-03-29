@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Checklist, RemoveChecklist } from '../../shared/interfaces/checklist';
+import { CustomPluralPipe } from '../../shared/pipes/plural.pipe';
 
 @Component({
   standalone: true,
@@ -12,6 +13,10 @@ import { Checklist, RemoveChecklist } from '../../shared/interfaces/checklist';
         <a routerLink="/checklist/{{ checklist.id }}">
           {{ checklist.title }}
         </a>
+
+        <p>
+          {{ checklist.itemsCount }} item{{ checklist.itemsCount | plural }}
+        </p>
         <div>
           <button (click)="edit.emit(checklist)">Edit</button>
           <button (click)="delete.emit(checklist.id)">Delete</button>
@@ -43,7 +48,7 @@ import { Checklist, RemoveChecklist } from '../../shared/interfaces/checklist';
       }
     `,
   ],
-  imports: [RouterLink],
+  imports: [RouterLink, CustomPluralPipe],
 })
 export class ChecklistListComponent {
   @Input({ required: true }) checklists!: Checklist[];
