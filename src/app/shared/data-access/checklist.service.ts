@@ -7,6 +7,7 @@ import {
   Checklist,
   EditChecklist,
 } from '../interfaces/checklist';
+import { reducer } from '../utils/reducer';
 import { StorageService } from './storage.service';
 
 export interface ChecklistsState {
@@ -41,15 +42,16 @@ export class ChecklistService {
 
   constructor() {
     // reducers
-    this.checklistsLoaded$.pipe(takeUntilDestroyed()).subscribe({
-      next: (checklists) =>
+    reducer(
+      this.checklistsLoaded$,
+      (checklists) =>
         this.state.update((state) => ({
           ...state,
           checklists,
           loaded: true,
         })),
-      error: (err) => this.state.update((state) => ({ ...state, error: err })),
-    });
+      (error) => this.state.update((state) => ({ ...state, error }))
+    );
 
     this.add$.pipe(takeUntilDestroyed()).subscribe((checklist) =>
       this.state.update((state) => ({
